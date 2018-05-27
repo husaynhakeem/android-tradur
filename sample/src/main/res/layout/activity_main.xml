@@ -14,7 +14,7 @@
         android:padding="16dp"
         android:text="Hello World!" />
 
-    <io.husaynhakeem.tradurlibrary.TradurTextView
+    <io.husaynhakeem.tradur.TradurTextView
         android:id="@+id/translateTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

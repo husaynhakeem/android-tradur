@@ -1,7 +1,6 @@
 package io.husaynhakeem.tradur
 
 import android.app.Application
-import io.husaynhakeem.tradurlibrary.Tradur
 
 
 class TradurSampleApplication : Application() {

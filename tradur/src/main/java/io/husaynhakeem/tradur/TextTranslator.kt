@@ -1,4 +1,4 @@
-package io.husaynhakeem.tradurlibrary
+package io.husaynhakeem.tradur
 
 import android.util.Log
 import com.google.cloud.translate.Translate

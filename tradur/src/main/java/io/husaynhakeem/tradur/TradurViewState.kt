@@ -1,4 +1,4 @@
-package io.husaynhakeem.tradurlibrary
+package io.husaynhakeem.tradur
 
 
 internal data class TradurViewState(

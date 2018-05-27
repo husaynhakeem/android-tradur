@@ -1,4 +1,4 @@
-package io.husaynhakeem.tradurlibrary
+package io.husaynhakeem.tradur
 
 import android.content.Context
 import android.content.res.TypedArray
@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import io.husaynhakeem.tradurlibrary.R
 
 
 class TradurTextView @JvmOverloads constructor(

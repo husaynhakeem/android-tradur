@@ -1,4 +1,4 @@
-package io.husaynhakeem.tradurlibrary
+package io.husaynhakeem.tradur
 
 
 object Tradur {
@@ -12,6 +12,6 @@ object Tradur {
         }
 
     fun init(apiKey: String) {
-        this.apiKey = apiKey
+        Tradur.apiKey = apiKey
     }
 }
