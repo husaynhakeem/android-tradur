@@ -9,7 +9,7 @@ import org.jetbrains.anko.coroutines.experimental.bg
 import java.util.*
 
 
-class TextTranslator {
+internal class TextTranslator {
 
     private val translateOptionsBuilder: TranslateOptions.Builder
             by lazy { TranslateOptions.newBuilder().setApiKey(Tradur.apiKey) }
@@ -19,7 +19,7 @@ class TextTranslator {
             onStart()
             val targetLanguage = Locale.getDefault().language
             try {
-                val translatedText = translateText(text, targetLanguage)
+                val translatedText = text.translateTo(targetLanguage)
                 onSuccess(translatedText)
             } catch (e: Exception) {
                 onFailure()
@@ -29,12 +29,12 @@ class TextTranslator {
     }
 
     @Throws(Exception::class)
-    private suspend fun translateText(text: String, targetLanguage: String): String {
+    private suspend fun String.translateTo(targetLanguage: String): String {
         return bg {
             translateOptionsBuilder.setTargetLanguage(targetLanguage)
                     .build()
                     .service
-                    .translate(text, Translate.TranslateOption.targetLanguage(targetLanguage))
+                    .translate(this@translateTo, Translate.TranslateOption.targetLanguage(targetLanguage))
         }.await().translatedText
     }
 

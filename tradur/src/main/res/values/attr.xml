@@ -2,5 +2,8 @@
 <resources>
     <declare-styleable name="TradurTextView">
         <attr name="translate_field" format="reference" />
+        <attr name="pre_translation_text" format="string|reference" />
+        <attr name="loading_text" format="string|reference" />
+        <attr name="post_translation_text" format="string|reference" />
     </declare-styleable>
 </resources>

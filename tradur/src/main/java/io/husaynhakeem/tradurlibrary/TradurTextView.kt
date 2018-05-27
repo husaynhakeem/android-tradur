@@ -1,6 +1,7 @@
 package io.husaynhakeem.tradurlibrary
 
 import android.content.Context
+import android.content.res.TypedArray
 import android.util.AttributeSet
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -18,57 +19,81 @@ class TradurTextView @JvmOverloads constructor(
 
     init {
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.TradurTextView, defStyleAttr, 0)
-        viewState = viewState.copy(translatableViewResId = typedArray.getResourceId(R.styleable.TradurTextView_translate_field, 0))
+        val translatableViewResId = typedArray.getResourceId(R.styleable.TradurTextView_translate_field, DEFAULT_RES_ID)
+        val loadingText = getStringValue(typedArray, R.styleable.TradurTextView_loading_text, R.string.default_loading_text)
+        val preTranslationText = getStringValue(typedArray, R.styleable.TradurTextView_pre_translation_text, R.string.default_pre_translation_text)
+        val postTranslationText = getStringValue(typedArray, R.styleable.TradurTextView_post_translation_text, R.string.default_post_translation_text)
+        viewState = viewState.copy(
+                translatableViewResId = translatableViewResId,
+                loadingText = loadingText,
+                preTranslationText = preTranslationText,
+                postTranslationText = postTranslationText)
         typedArray.recycle()
+    }
+
+    private fun getStringValue(typedArray: TypedArray, index: Int, defaultValResId: Int): String {
+        val resId = typedArray.getResourceId(index, DEFAULT_RES_ID)
+        if (resId != DEFAULT_RES_ID) {
+            return context.getString(resId)
+        }
+        return typedArray.getString(index) ?: context.getString(defaultValResId)
     }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        if (viewState.translatableViewResId == 0) {
-            throw RuntimeException("Resource identifier for attribute translate_field not defined")
+        if (viewState.translatableViewResId == DEFAULT_RES_ID) {
+            throw RuntimeException("Resource identifier for attribute app:translate_field not defined")
         }
         setUpTranslationWidget()
     }
 
     private fun setUpTranslationWidget() {
-        val translatableTextView = getTranslatableTextViewFrom(viewState.translatableViewResId)
+        this.text = viewState.preTranslationText
+        val translatableTextView = getTranslatableTextView(viewState.translatableViewResId)
         this.setOnClickListener {
             if (viewState.hasTranslatableTextBeenTranslated) {
                 revertToOriginalText(translatableTextView)
+                viewState = viewState.copy(hasTranslatableTextBeenTranslated = false)
             } else {
                 viewState = viewState.copy(originalTranslatableText = translatableTextView.text.toString())
                 translateText(translatableTextView)
             }
-            viewState = viewState.copy(hasTranslatableTextBeenTranslated = !viewState.hasTranslatableTextBeenTranslated)
         }
     }
 
-    private fun getTranslatableTextViewFrom(resId: Int): TextView {
+    private fun getTranslatableTextView(resId: Int): TextView {
         val contextCopy = context
         return when (contextCopy) {
             is AppCompatActivity -> contextCopy.findViewById<TextView>(resId)
             is Fragment -> contextCopy.activity?.findViewById(resId)
-            else -> throw RuntimeException("Context not activity or fragment")
+            else -> throw RuntimeException("TradurTextView context neither an activity or fragment")
         } ?: throw RuntimeException("View for $resId is not a textView")
     }
 
     private fun revertToOriginalText(translatableTextView: TextView) {
-        updateTexts(R.string.default_see_translation, translatableTextView, viewState.originalTranslatableText)
+        updateTexts(viewState.preTranslationText, translatableTextView, viewState.originalTranslatableText)
     }
 
     private fun translateText(translatableTextView: TextView) {
         textTranslator.translate(
                 translatableTextView.text.toString(),
-                onStart = { this@TradurTextView.setText(R.string.default_loading) },
-                onSuccess = { updateTexts(R.string.default_see_original, translatableTextView, it) },
+                onStart = { this@TradurTextView.text = viewState.loadingText },
+                onSuccess = {
+                    updateTexts(viewState.postTranslationText, translatableTextView, it)
+                    viewState = viewState.copy(hasTranslatableTextBeenTranslated = true)
+                },
                 onFailure = {
-                    updateTexts(R.string.default_see_translation, translatableTextView, viewState.originalTranslatableText)
+                    updateTexts(viewState.preTranslationText, translatableTextView, viewState.originalTranslatableText)
                     viewState = viewState.copy(hasTranslatableTextBeenTranslated = false)
                 })
     }
 
-    private fun updateTexts(translatorTextResId: Int, translatableTextView: TextView, translatableTextViewText: String) {
-        this@TradurTextView.setText(translatorTextResId)
+    private fun updateTexts(translatorText: String, translatableTextView: TextView, translatableTextViewText: String) {
+        this@TradurTextView.text = translatorText
         translatableTextView.text = translatableTextViewText
+    }
+
+    companion object {
+        private const val DEFAULT_RES_ID = 0
     }
 }

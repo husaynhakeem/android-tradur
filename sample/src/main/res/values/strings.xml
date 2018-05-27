@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Tradur</string>
+    <string name="translating">Translate this text!</string>
+    <string name="done_translating">Revert back!</string>
 </resources>

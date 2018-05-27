@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Tradur Library</string>
 
-    <string name="default_see_translation">See translated text</string>
-    <string name="default_see_original">See original</string>
-    <string name="default_loading">Loading…</string>
+    <string name="default_pre_translation_text">See translated text</string>
+    <string name="default_post_translation_text">See original</string>
+    <string name="default_loading_text">Loading…</string>
 </resources>
