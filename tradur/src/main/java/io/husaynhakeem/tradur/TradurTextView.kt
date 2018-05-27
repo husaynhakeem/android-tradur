@@ -4,8 +4,6 @@ import android.content.Context
 import android.content.res.TypedArray
 import android.util.AttributeSet
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
 import io.husaynhakeem.tradurlibrary.R
 
 
@@ -16,7 +14,10 @@ class TradurTextView @JvmOverloads constructor(
 ) : TextView(context, attrs, defStyleAttr) {
 
     private var viewState: TradurViewState = TradurViewState()
-    private val textTranslator: TextTranslator by lazy { TextTranslator() }
+    private val translatableTextView: TextView by lazy {
+        ViewTreeSearcher.findTextViewWithIdClosestTo(this, viewState.translatableViewResId)
+                ?: throw RuntimeException("View for ${viewState.translatableViewResId} is not a textView")
+    }
 
     init {
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.TradurTextView, defStyleAttr, 0)
@@ -50,7 +51,6 @@ class TradurTextView @JvmOverloads constructor(
 
     private fun setUpTranslationWidget() {
         this.text = viewState.preTranslationText
-        val translatableTextView = getTranslatableTextView(viewState.translatableViewResId)
         this.setOnClickListener {
             if (viewState.hasTranslatableTextBeenTranslated) {
                 revertToOriginalText(translatableTextView)
@@ -62,21 +62,12 @@ class TradurTextView @JvmOverloads constructor(
         }
     }
 
-    private fun getTranslatableTextView(resId: Int): TextView {
-        val contextCopy = context
-        return when (contextCopy) {
-            is AppCompatActivity -> contextCopy.findViewById<TextView>(resId)
-            is Fragment -> contextCopy.activity?.findViewById(resId)
-            else -> throw RuntimeException("TradurTextView context neither an activity or fragment")
-        } ?: throw RuntimeException("View for $resId is not a textView")
-    }
-
     private fun revertToOriginalText(translatableTextView: TextView) {
         updateTexts(viewState.preTranslationText, translatableTextView, viewState.originalTranslatableText)
     }
 
     private fun translateText(translatableTextView: TextView) {
-        textTranslator.translate(
+        TextTranslator.translate(
                 translatableTextView.text.toString(),
                 onStart = { this@TradurTextView.text = viewState.loadingText },
                 onSuccess = {
@@ -92,6 +83,11 @@ class TradurTextView @JvmOverloads constructor(
     private fun updateTexts(translatorText: String, translatableTextView: TextView, translatableTextViewText: String) {
         this@TradurTextView.text = translatorText
         translatableTextView.text = translatableTextViewText
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        viewState = viewState.copy(hasTranslatableTextBeenTranslated = false)
     }
 
     companion object {

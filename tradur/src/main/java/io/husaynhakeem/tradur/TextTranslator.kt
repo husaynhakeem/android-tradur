@@ -9,7 +9,9 @@ import org.jetbrains.anko.coroutines.experimental.bg
 import java.util.*
 
 
-internal class TextTranslator {
+internal object TextTranslator {
+
+    private val TAG = TextTranslator::class.java.simpleName
 
     private val translateOptionsBuilder: TranslateOptions.Builder
             by lazy { TranslateOptions.newBuilder().setApiKey(Tradur.apiKey) }
@@ -41,9 +43,5 @@ internal class TextTranslator {
     private fun onTranslationError(text: String, targetLanguage: String, e: Exception) {
         Log.e(TAG, "Error translating '$text' into $targetLanguage: ${e.message}")
         e.printStackTrace()
-    }
-
-    companion object {
-        private val TAG = TextTranslator::class.java.simpleName
     }
 }
