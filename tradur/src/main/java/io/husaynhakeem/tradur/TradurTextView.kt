@@ -46,48 +46,57 @@ class TradurTextView @JvmOverloads constructor(
         if (viewState.translatableViewResId == DEFAULT_RES_ID) {
             throw RuntimeException("Resource identifier for attribute app:translate_field not defined")
         }
-        setUpTranslationWidget()
-    }
-
-    private fun setUpTranslationWidget() {
-        this.text = viewState.preTranslationText
-        this.setOnClickListener {
-            if (viewState.hasTranslatableTextBeenTranslated) {
-                revertToOriginalText(translatableTextView)
-                viewState = viewState.copy(hasTranslatableTextBeenTranslated = false)
+        updateUI()
+        setOnClickListener {
+            if (viewState.isTextTranslated) {
+                viewState = viewState.copy(
+                        isTextTranslated = false,
+                        translationState = TranslationState.PRE_TRANSLATION)
+                updateUI()
             } else {
-                viewState = viewState.copy(originalTranslatableText = translatableTextView.text.toString())
-                translateText(translatableTextView)
+                viewState = viewState.copy(originalText = translatableTextView.text.toString())
+                translateText()
             }
         }
     }
 
-    private fun revertToOriginalText(translatableTextView: TextView) {
-        updateTexts(viewState.preTranslationText, translatableTextView, viewState.originalTranslatableText)
-    }
-
-    private fun translateText(translatableTextView: TextView) {
+    private fun translateText() {
         TextTranslator.translate(
-                translatableTextView.text.toString(),
-                onStart = { this@TradurTextView.text = viewState.loadingText },
+                viewState.originalText,
+                onStart = {
+                    viewState = viewState.copy(translationState = TranslationState.LOADING)
+                    updateUI()
+                },
                 onSuccess = {
-                    updateTexts(viewState.postTranslationText, translatableTextView, it)
-                    viewState = viewState.copy(hasTranslatableTextBeenTranslated = true)
+                    viewState = viewState.copy(
+                            translationState = TranslationState.POST_TRANSLATION,
+                            translationText = it,
+                            isTextTranslated = true)
+                    updateUI()
                 },
                 onFailure = {
-                    updateTexts(viewState.preTranslationText, translatableTextView, viewState.originalTranslatableText)
-                    viewState = viewState.copy(hasTranslatableTextBeenTranslated = false)
+                    viewState = viewState.copy(
+                            translationState = TranslationState.PRE_TRANSLATION,
+                            isTextTranslated = false)
+                    updateUI()
                 })
     }
 
-    private fun updateTexts(translatorText: String, translatableTextView: TextView, translatableTextViewText: String) {
-        this@TradurTextView.text = translatorText
-        translatableTextView.text = translatableTextViewText
-    }
-
-    override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
-        viewState = viewState.copy(hasTranslatableTextBeenTranslated = false)
+    private fun updateUI() {
+        with(viewState) {
+            if (isTextTranslated) {
+                if (translationText.isNotBlank())
+                    translatableTextView.text = translationText
+            } else {
+                if (originalText.isNotBlank())
+                    translatableTextView.text = originalText
+            }
+            when (translationState) {
+                TranslationState.LOADING -> this@TradurTextView.text = loadingText
+                TranslationState.PRE_TRANSLATION -> this@TradurTextView.text = preTranslationText
+                TranslationState.POST_TRANSLATION -> this@TradurTextView.text = postTranslationText
+            }
+        }
     }
 
     companion object {

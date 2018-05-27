@@ -2,9 +2,16 @@ package io.husaynhakeem.tradur
 
 
 internal data class TradurViewState(
-        val originalTranslatableText: String = EMPTY,
+        // Translatable view and text
         val translatableViewResId: Int = 0,
+        val originalText: String = EMPTY,
+        val translationText: String = EMPTY,
+
+        // Translator view state and text
+        val translationState: TranslationState = TranslationState.PRE_TRANSLATION,
         val loadingText: String = EMPTY,
         val preTranslationText: String = EMPTY,
         val postTranslationText: String = EMPTY,
-        val hasTranslatableTextBeenTranslated: Boolean = false)
+
+        // Is original text translated or not
+        val isTextTranslated: Boolean = false)

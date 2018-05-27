@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Tradur Sample</string>
-    <string name="translating">Translate this text!</string>
-    <string name="done_translating">Revert back!</string>
+    <string name="pre_translation_text">See translation</string>
+    <string name="loading_text">Translating…</string>
     <string name="post_date_translate_separator">•</string>
 </resources>
