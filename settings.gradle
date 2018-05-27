@@ -1,1 +1,1 @@
-include ':app', ':tradur'
+include ':sample', ':tradur'

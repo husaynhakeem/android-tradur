@@ -8,6 +8,6 @@ class TradurSampleApplication: Application() {
 
     override fun onCreate() {
         super.onCreate()
-        Tradur.init("<API_KEY>")
+        Tradur.init("AIzaSyCYf85QKk6x2ZbZroZRp_YemJaDT0gLpUQ")
     }
 }
