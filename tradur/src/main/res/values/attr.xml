@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="TradurTextView">
+        <attr name="translate_field" format="reference" />
+    </declare-styleable>
+</resources>
