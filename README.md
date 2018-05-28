@@ -52,7 +52,7 @@ For further custumization, you can choose to change one of the following:
 
 
 ## Demo
-
+![alt text](https://github.com/husaynhakeem/android-tradur/blob/master/art/tradur_demo.gif)
 
 
 ## Download
