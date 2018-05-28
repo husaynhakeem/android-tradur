@@ -67,5 +67,5 @@ allprojects {
 ```
 2. Add the dependency
 ```groovy
-implementation ''
+implementation 'com.github.husaynhakeem:android-tradur:v1.0'
 ```
