@@ -2,7 +2,7 @@
 
 Tradur is a text translation Android library which allows your application's users to easily translate any text content in the app to their device's language.
 
-Since Tradur is built on top of the Google Translate API, it supports translating text from and to more than 100 languages.
+Since Tradur is built on top of the Google Translate API, it supports translating text **from and to more than 100 languages**.
 
 This library can be very useful for social media apps, or in apps where users post content in different languages. In fact, it was inspired by Instagram's "See translation" feature.
 
