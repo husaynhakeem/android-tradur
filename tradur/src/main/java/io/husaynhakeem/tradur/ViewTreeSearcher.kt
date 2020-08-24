@@ -6,7 +6,7 @@ import android.widget.TextView
 import java.util.*
 
 
-internal object ViewTreeSearcher {
+internal class ViewTreeSearcher {
 
     fun findTextViewWithIdClosestTo(textView: TextView, resId: Int): TextView? {
         return findFirstTextViewWithId(textView.parent as? ViewGroup, resId)

@@ -1,47 +1,116 @@
 package io.husaynhakeem.tradur
 
 import android.util.Log
-import com.google.cloud.translate.Translate
-import com.google.cloud.translate.TranslateOptions
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.async
-import org.jetbrains.anko.coroutines.experimental.bg
+import com.google.mlkit.common.model.DownloadConditions
+import com.google.mlkit.nl.languageid.LanguageIdentification
+import com.google.mlkit.nl.translate.TranslateLanguage
+import com.google.mlkit.nl.translate.Translation.getClient
+import com.google.mlkit.nl.translate.Translator
+import com.google.mlkit.nl.translate.TranslatorOptions
 import java.util.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 
-internal object TextTranslator {
+internal class TextTranslator {
 
-    private val TAG = TextTranslator::class.java.simpleName
+    suspend fun translate(text: String): String {
+        try {
+            // Get language we're translating from
+            val fromTag = identifyLanguage(text)
+            val from = getLanguage(fromTag)
 
-    private val translateOptionsBuilder: TranslateOptions.Builder
-            by lazy { TranslateOptions.newBuilder().setApiKey(Tradur.apiKey) }
+            // Get language we're translating to
+            val toTag = Locale.getDefault().language
+            val to = getLanguage(toTag)
 
-    fun translate(text: String, onStart: () -> Unit, onSuccess: (String) -> Unit, onFailure: () -> Unit) {
-        async(UI) {
-            onStart()
-            val targetLanguage = Locale.getDefault().language
-            try {
-                val translatedText = text.translateTo(targetLanguage)
-                onSuccess(translatedText)
-            } catch (e: Exception) {
-                onFailure()
-                onTranslationError(text, targetLanguage, e)
-            }
+            // Build translator
+            val options = TranslatorOptions.Builder()
+                    .setSourceLanguage(from)
+                    .setTargetLanguage(to)
+                    .build()
+            val translator = getClient(options)
+
+            // Download language model
+            downloadModel(translator)
+
+            // Return translated text
+            return translate(translator, text)
+        } catch (exception: Exception) {
+            Log.e(TAG, "Failed to translate [$text]", exception)
+            return String.empty
         }
     }
 
-    @Throws(Exception::class)
-    private suspend fun String.translateTo(targetLanguage: String): String {
-        return bg {
-            translateOptionsBuilder.setTargetLanguage(targetLanguage)
-                    .build()
-                    .service
-                    .translate(this@translateTo, Translate.TranslateOption.targetLanguage(targetLanguage))
-        }.await().translatedText
+    private suspend fun identifyLanguage(text: String): String {
+        return suspendCoroutine { continuation ->
+            val languageIdentifier = LanguageIdentification.getClient()
+            languageIdentifier.identifyLanguage(text)
+                    .addOnSuccessListener { languageCode ->
+                        if (languageCode == UNDEFINED_LANGUAGE) {
+                            Log.i(TAG, "Identified language is undefined")
+                            continuation.resumeWithException(LanguageIdentificationException(
+                                    "Identified language is undefined"))
+                        } else {
+                            Log.i(TAG, "Successfully identified language [$languageCode] from " +
+                                    "[$text]")
+                            continuation.resume(languageCode)
+                        }
+                    }
+                    .addOnFailureListener { exception ->
+                        // Model could not be loaded or other internal error.
+                        Log.e(TAG, "Failed to identify language", exception)
+                        continuation.resumeWithException(LanguageIdentificationException(exception))
+                    }
+        }
     }
 
-    private fun onTranslationError(text: String, targetLanguage: String, e: Exception) {
-        Log.e(TAG, "Error translating '$text' into $targetLanguage: ${e.message}")
-        e.printStackTrace()
+    private fun getLanguage(tag: String): String {
+        val language = TranslateLanguage.fromLanguageTag(tag)
+        Log.i(TAG, "Language [$language] corresponds to tag [$tag]")
+
+        if (language == null) {
+            throw IllegalArgumentException("Unknown language tag $tag")
+        }
+        return language
+    }
+
+    private suspend fun downloadModel(translator: Translator) {
+        return suspendCoroutine { continuation ->
+            val conditions = DownloadConditions.Builder()
+                    .requireWifi()
+                    .build()
+            translator.downloadModelIfNeeded(conditions)
+                    .addOnSuccessListener {
+                        // Model downloaded successfully. Okay to start translating.
+                        Log.i(TAG, "Successfully downloaded model")
+                        continuation.resume(Unit)
+                    }
+                    .addOnFailureListener { exception ->
+                        // Model couldn’t be downloaded or other internal error.
+                        Log.e(TAG, "Failed to download model", exception)
+                        continuation.resumeWithException(ModelDownloadException(exception))
+                    }
+        }
+    }
+
+    private suspend fun translate(translator: Translator, text: String): String {
+        return suspendCoroutine { continuation ->
+            translator.translate(text)
+                    .addOnSuccessListener { translation ->
+                        Log.i(TAG, "Successfully translated [$text] into [$translation]")
+                        continuation.resume(translation)
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.e(TAG, "Failed to translate [$text]", exception)
+                        continuation.resumeWithException(TranslationException(exception))
+                    }
+        }
+    }
+
+    companion object {
+        private const val TAG = "TextTranslator"
+        private const val UNDEFINED_LANGUAGE = "und"
     }
 }
