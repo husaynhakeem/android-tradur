@@ -2,27 +2,16 @@
 
 Tradur is a text translation Android library which allows your application's users to easily translate any text content in the app to their device's language.
 
-Since Tradur is built on top of the Google Translate API, it supports translating text **from and to more than 100 languages**.
+Since Tradur is built on top of the [MLKit API](https://developers.google.com/ml-kit/language/translation), it supports translating text **from and to more than 50 languages**.
 
 This library can be very useful for social media apps, or in apps where users post content in different languages. In fact, it was inspired by Instagram's "See translation" feature.
 
 
 ## Usage
 
-Three easy steps:
+Two easy steps:
 
-1. Call `Tradur`'s `init` method with your Google Translate API key in the `onCreate` of your application class.
-```kotlin
-class YourApplication : Application() {
-
-    override fun onCreate() {
-        super.onCreate()
-        Tradur.init(<API_KEY>)
-    }
-}
-```
-
-2. Create a textView and assign it an id
+1. Create a textView and assign it an id, e.g. `textview`.
 
 ```xml
 <TextView
@@ -32,7 +21,7 @@ class YourApplication : Application() {
      android:text="Text you want the user to be able to translate" />
 ```
 
-3. Define a `TradurTextView` element in the same layout and link it to the textView you just created
+2. Define a `TradurTextView` element in the same layout and link it to the textView you just created using its id.
 
 ```xml
 <io.husaynhakeem.tradur.TradurTextView
@@ -42,17 +31,17 @@ class YourApplication : Application() {
      ... />
 ```
 
-That's it! Check out the sample app in the `sample/` folder to see it in action.
+That's it! Check out the sample app in the [`sample/`](https://github.com/husaynhakeem/android-tradur/tree/master/sample) folder to see it in action.
 
-For further custumization, you can choose to change one of the following:
+For further custumization, you can choose to change one/all of the following:
 
-- The pre-translation message: The text displayed in the `TradurTextView` element before the user decides to translate (by default, it's set to "See translation")
-- the loading message: The text displayed in the `TradurTextView` element while the translation is being done (by default, it's set to "Loading…")
+- The pre-translation message: The text displayed in the `TradurTextView` element before the user chooses to translate text content (by default, it's set to "See translation")
+- the loading message: The text displayed in the `TradurTextView` element while the translation is ongoing (by default, it's set to "Loading…")
 - The post-translation message: The text displayed in the `TradurTextView` element after the translation is done (by default, it's set to "See original")
 
 
 ## Demo
-![alt text](https://github.com/husaynhakeem/android-tradur/blob/master/art/tradur_demo.gif)
+![demo](https://github.com/husaynhakeem/android-tradur/blob/master/art/tradur_demo.gif)
 
 
 ## Download
@@ -67,5 +56,5 @@ allprojects {
 ```
 2. Add the dependency
 ```groovy
-implementation 'com.github.husaynhakeem:android-tradur:v1.0'
+implementation 'com.github.husaynhakeem:android-tradur:2.0'
 ```
